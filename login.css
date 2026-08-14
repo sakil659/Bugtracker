@@ -1,0 +1,89 @@
+body.login-page {
+  background-color: rgb(255, 255, 255); /* white instead of black */
+  min-height: 100vh;
+}
+.login-wrapper {
+  max-width: 400px;
+  margin: 60px auto;
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgb(229, 231, 235);
+  border-radius: 12px;
+  padding: 35px;
+  box-sizing: border-box;
+}
+
+.login-logo {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  color: rgb(17, 24, 39);
+}
+
+.login-wrapper h2 {
+  margin-bottom: 6px;
+  font-size: 24px;
+  color: rgb(17, 24, 39);
+}
+
+.login-subtext {
+  font-size: 14px;
+  color: rgb(107, 114, 128);
+  margin-bottom: 20px;
+}
+
+.login-error {
+  color: rgb(239, 68, 68);
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  color: rgb(31, 41, 55);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgb(209, 213, 219);
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 18px;
+}
+
+.forgot-password a {
+  font-size: 13px;
+  color: rgb(46, 126, 254);
+}
+
+.login-btn-submit {
+  width: 100%;
+  background-color: rgb(46, 126, 254);
+  color: rgb(255, 255, 255);
+  border: none;
+  padding: 14px 26px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.login-footer-text {
+  margin-top: 20px;
+  font-size: 14px;
+  color: rgb(107, 114, 128);
+  text-align: center;
+}
