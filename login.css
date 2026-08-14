@@ -1,5 +1,5 @@
 body.login-page {
-  background-color: rgb(255, 255, 255); /* white instead of black */
+  background-color: rgb(255, 255, 255);
   min-height: 100vh;
 }
 .login-wrapper {
