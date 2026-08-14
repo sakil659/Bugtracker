@@ -388,3 +388,28 @@ body {
   font-size: 14px;
   box-sizing: border-box;
 }
+
+.user-avatar-img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-pic-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.login-success {
+  color: rgb(5, 150, 105);
+  background-color: rgb(220, 252, 231);
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
