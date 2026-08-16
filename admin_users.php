@@ -13,8 +13,14 @@ if ($_SESSION["role"] != "admin") {
     exit;
 }
 
+$user_id = $_SESSION["user_id"];
 $name = $_SESSION["name"];
 $role = $_SESSION["role"];
+
+$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_result = mysqli_query($conn, $theme_sql);
+$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 
 // Handle role change
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["change_role"])) {
@@ -51,7 +57,7 @@ $users_result = mysqli_query($conn, $users_sql);
 <head>
     <meta charset="UTF-8">
     <title>Manage Users - BugTracker</title>
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="<?php echo $css_file; ?>">
 </head>
 <body>
     <div class="app-layout">
@@ -66,7 +72,7 @@ $users_result = mysqli_query($conn, $users_sql);
                 <a href="admin_users.php" class="sidebar-link active">Manage Users</a>
                 <a href="auditlog.php" class="sidebar-link">Activity Log</a>
                 <a href="comingsoon.php" class="sidebar-link">Projects</a>
-                <a href="comingsoon.php" class="sidebar-link">Settings</a>
+                <a href="settings.php" class="sidebar-link">Settings</a>
             </div>
 
             <div class="sidebar-footer">

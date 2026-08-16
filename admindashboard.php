@@ -13,8 +13,14 @@ if ($_SESSION["role"] != "admin") {
     exit;
 }
 
+$user_id = $_SESSION["user_id"];
 $name = $_SESSION["name"];
 $role = $_SESSION["role"];
+
+$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_result = mysqli_query($conn, $theme_sql);
+$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 
 // Global stats - across ALL issues, not just one user's
 $total_result = mysqli_query($conn, "SELECT COUNT(*) as total FROM issues");
@@ -41,7 +47,7 @@ $issues_result = mysqli_query($conn, $issues_sql);
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - BugTracker</title>
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="<?php echo $css_file; ?>">
 </head>
 <body>
     <div class="app-layout">
@@ -56,7 +62,7 @@ $issues_result = mysqli_query($conn, $issues_sql);
                 <a href="admin_users.php" class="sidebar-link">Manage Users</a>
                 <a href="auditlog.php" class="sidebar-link">Activity Log</a>
                 <a href="comingsoon.php" class="sidebar-link">Projects</a>
-                <a href="comingsoon.php" class="sidebar-link">Settings</a>
+                <a href="settings.php" class="sidebar-link">Settings</a>
             </div>
 
             <div class="sidebar-footer">

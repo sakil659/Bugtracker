@@ -12,6 +12,10 @@ $name = $_SESSION["name"];
 $role = $_SESSION["role"];
 $issue_id = $_GET["id"];
 
+$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_result = mysqli_query($conn, $theme_sql);
+$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 // Handle status change - Admin only
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["new_status"])) {
 
@@ -58,7 +62,7 @@ $comments_result = mysqli_query($conn, $comments_sql);
 <head>
     <meta charset="UTF-8">
     <title>Issue Detail - BugTracker</title>
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="<?php echo $css_file; ?>">
 </head>
 <body>
     <div class="app-layout">
@@ -74,7 +78,7 @@ $comments_result = mysqli_query($conn, $comments_sql);
                     <a href="admin_users.php" class="sidebar-link">Manage Users</a>
                     <a href="auditlog.php" class="sidebar-link">Activity Log</a>
                     <a href="comingsoon.php" class="sidebar-link">Projects</a>
-                    <a href="comingsoon.php" class="sidebar-link">Settings</a>
+                    <a href="settings.php" class="sidebar-link">Settings</a>
                 <?php } else { ?>
                     <a href="dashboard.php" class="sidebar-link">Dashboard</a>
                     <a href="issue.php" class="sidebar-link active">Issues</a>
@@ -82,7 +86,7 @@ $comments_result = mysqli_query($conn, $comments_sql);
                     <a href="createissue.php" class="sidebar-link">+ Create Issue</a>
                     <a href="comingsoon.php" class="sidebar-link">Projects</a>
                     <a href="auditlog.php" class="sidebar-link">Activity</a>
-                    <a href="comingsoon.php" class="sidebar-link">Settings</a>
+                    <a href="settings.php" class="sidebar-link">Settings</a>
                 <?php } ?>
             </div>
 

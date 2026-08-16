@@ -1,5 +1,6 @@
 <?php
 session_start();
+include "db.php";
 if (!isset($_SESSION["user_id"])) {
     header("Location: login.php");
     exit;
@@ -7,13 +8,19 @@ if (!isset($_SESSION["user_id"])) {
 
 $name = $_SESSION["name"];
 $role = $_SESSION["role"];
+$user_id = $_SESSION["user_id"];
+
+$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_result = mysqli_query($conn, $theme_sql);
+$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Coming Soon - BugTracker</title>
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="<?php echo $css_file; ?>">
 </head>
 <body>
     <div class="app-layout">
@@ -27,15 +34,15 @@ $role = $_SESSION["role"];
         <a href="admin_users.php" class="sidebar-link">Manage Users</a>
         <a href="auditlog.php" class="sidebar-link">Activity Log</a>
         <a href="comingsoon.php" class="sidebar-link active">Projects</a>
-        <a href="comingsoon.php" class="sidebar-link">Settings</a>
+        <a href="settings.php" class="sidebar-link">Settings</a>
     <?php } else { ?>
         <a href="dashboard.php" class="sidebar-link">Dashboard</a>
         <a href="issue.php" class="sidebar-link">Issues</a>
-        <a href="dashboard.php" class="sidebar-link">My Issues</a>
+        <a href="dashboard.php?view=mine" class="sidebar-link">My Issues</a>
         <a href="createissue.php" class="sidebar-link">+ Create Issue</a>
         <a href="comingsoon.php" class="sidebar-link active">Projects</a>
         <a href="auditlog.php" class="sidebar-link">Activity</a>
-        <a href="comingsoon.php" class="sidebar-link">Settings</a>
+        <a href="settings.php" class="sidebar-link">Settings</a>
     <?php } ?>
 </div>
 

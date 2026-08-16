@@ -15,6 +15,10 @@ if ($_SESSION["role"] == "admin") {
 $user_id = $_SESSION["user_id"];
 $name = $_SESSION["name"];
 $role = $_SESSION["role"];
+$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_result = mysqli_query($conn, $theme_sql);
+$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 // Check if this is the "My Issues" filtered view
 $view = isset($_GET["view"]) ? $_GET["view"] : "all";
 
@@ -61,7 +65,7 @@ $issues_result = mysqli_query($conn, $issues_sql);
 <head>
     <meta charset="UTF-8">
     <title>Dashboard - BugTracker</title>
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="<?php echo $css_file; ?>">
 </head>
 <body>
     <div class="app-layout">
@@ -77,7 +81,7 @@ $issues_result = mysqli_query($conn, $issues_sql);
                 <a href="createissue.php" class="sidebar-link">+ Create Issue</a>
                 <a href="comingsoon.php" class="sidebar-link">Projects</a>
                 <a href="auditlog.php" class="sidebar-link">Activity</a>
-                <a href="comingsoon.php" class="sidebar-link">Settings</a>
+                <a href="settings.php" class="sidebar-link">Settings</a>
             </div>
 
             <div class="sidebar-footer">

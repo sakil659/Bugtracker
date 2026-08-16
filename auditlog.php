@@ -11,6 +11,11 @@ $user_id = $_SESSION["user_id"];
 $name = $_SESSION["name"];
 $role = $_SESSION["role"];
 
+$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_result = mysqli_query($conn, $theme_sql);
+$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
+
 // Admin sees all activity, User only sees activity on issues they reported
 if ($role == "admin") {
     $log_sql = "SELECT activity_log.*, users.name FROM activity_log 
@@ -29,7 +34,7 @@ $log_result = mysqli_query($conn, $log_sql);
 <head>
     <meta charset="UTF-8">
     <title>Activity Log - BugTracker</title>
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="<?php echo $css_file; ?>">
 </head>
 <body>
     <div class="app-layout">
@@ -45,7 +50,7 @@ $log_result = mysqli_query($conn, $log_sql);
                     <a href="admin_users.php" class="sidebar-link">Manage Users</a>
                     <a href="auditlog.php" class="sidebar-link active">Activity Log</a>
                     <a href="comingsoon.php" class="sidebar-link">Projects</a>
-                    <a href="comingsoon.php" class="sidebar-link">Settings</a>
+                    <a href="settings.php" class="sidebar-link">Settings</a>
                 <?php } else { ?>
                     <a href="dashboard.php" class="sidebar-link">Dashboard</a>
                     <a href="issue.php" class="sidebar-link">Issues</a>
@@ -53,7 +58,7 @@ $log_result = mysqli_query($conn, $log_sql);
                     <a href="createissue.php" class="sidebar-link">+ Create Issue</a>
                     <a href="comingsoon.php" class="sidebar-link">Projects</a>
                     <a href="auditlog.php" class="sidebar-link active">Activity</a>
-                     <a href="comingsoon.php" class="sidebar-link">Settings</a>
+                     <a href="settings.php" class="sidebar-link">Settings</a>
 <?php } ?>
             </div>
 
