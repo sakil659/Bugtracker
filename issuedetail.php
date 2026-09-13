@@ -16,6 +16,50 @@ $theme_sql = "SELECT theme FROM users WHERE id = $user_id";
 $theme_result = mysqli_query($conn, $theme_sql);
 $theme = mysqli_fetch_assoc($theme_result)["theme"];
 $css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
+
+// Handle assignment - Admin only
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["assign_to"])) {
+
+    if ($role == "admin") {
+        $assign_to = $_POST["assign_to"];
+
+        if ($assign_to == "") {
+            $update_sql = "UPDATE issues SET assignee_id = NULL WHERE id = $issue_id";
+        } else {
+            $update_sql = "UPDATE issues SET assignee_id = $assign_to WHERE id = $issue_id";
+        }
+        mysqli_query($conn, $update_sql);
+
+        $log_action = "Updated assignment on issue #$issue_id";
+        $log_sql = "INSERT INTO activity_log (user_id, action) VALUES ($user_id, '$log_action')";
+        mysqli_query($conn, $log_sql);
+    }
+
+    header("Location: issuedetail.php?id=$issue_id");
+    exit;
+}
+
+// Handle delete issue - Admin only
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["delete_issue"])) {
+
+    if ($role == "admin") {
+
+        // Delete comments attached to this issue first
+        $delete_comments_sql = "DELETE FROM comments WHERE issue_id = $issue_id";
+        mysqli_query($conn, $delete_comments_sql);
+
+        // Now safe to delete the issue itself
+        $delete_sql = "DELETE FROM issues WHERE id = $issue_id";
+        mysqli_query($conn, $delete_sql);
+
+        $log_action = "Deleted issue #$issue_id";
+        $log_sql = "INSERT INTO activity_log (user_id, action) VALUES ($user_id, '$log_action')";
+        mysqli_query($conn, $log_sql);
+    }
+
+    header("Location: issue.php");
+    exit;
+}
 // Handle status change - Admin only
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["new_status"])) {
 
@@ -49,6 +93,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["comment_text"])) {
 $issue_sql = "SELECT * FROM issues WHERE id = $issue_id";
 $issue_result = mysqli_query($conn, $issue_sql);
 $issue = mysqli_fetch_assoc($issue_result);
+
+// Get all active regular users for assignment dropdown
+$users_sql = "SELECT id, name FROM users WHERE role = 'user' AND status = 'active' AND can_be_assigned = 1";
+$users_result = mysqli_query($conn, $users_sql);
 
 // Get comments for this issue
 $comments_sql = "SELECT comments.*, users.name FROM comments 
@@ -125,6 +173,23 @@ $comments_result = mysqli_query($conn, $comments_sql);
                         </select>
                         <button type="submit" class="btn-blue">Update Status</button>
                     </form>
+
+                    <form method="POST" action="issuedetail.php?id=<?php echo $issue_id; ?>" class="status-form">
+                        <label>Assign To</label>
+                        <select name="assign_to">
+                            <option value="">Unassigned</option>
+                            <?php while ($u = mysqli_fetch_assoc($users_result)) { ?>
+                                <option value="<?php echo $u["id"]; ?>" <?php if ($issue["assignee_id"] == $u["id"]) echo "selected"; ?>>
+                                    <?php echo $u["name"]; ?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                        <button type="submit" class="btn-blue">Assign</button>
+                    </form>
+
+                    <form method="POST" action="issuedetail.php?id=<?php echo $issue_id; ?>" onsubmit="return confirm('Are you sure you want to delete this issue?');" style="margin-top:15px;">
+                        <button type="submit" name="delete_issue" class="btn-blue" style="background-color: rgb(239,68,68);">Delete Issue</button>
+                    </form>
                 <?php } else { ?>
                     <p class="empty-text" style="text-align:left;">Only an Admin can change the status of this issue.</p>
                 <?php } ?>
@@ -149,4 +214,4 @@ $comments_result = mysqli_query($conn, $comments_sql);
         </div>
     </div>
 </body>
-</html>
+</html> 

@@ -1,6 +1,7 @@
 <?php
 session_start();
 include "db.php";
+include "smtp_mailer.php";
 
 $error = "";
 
@@ -10,6 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST["email"];
     $password = $_POST["password"];
     $role = "user";
+    $can_be_assigned = isset($_POST["can_be_assigned"]) ? 1 : 0;
 
     $check_sql = "SELECT * FROM users WHERE email = '$email'";
     $check_result = mysqli_query($conn, $check_sql);
@@ -19,15 +21,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $insert_sql = "INSERT INTO users (name, email, password_hash, role) 
-                       VALUES ('$name', '$email', '$password_hash', '$role')";
+        // Generate a random, unique verification token
+    // Generate a random 6-digit OTP code
+    $otp_code = rand(100000, 999999);
 
-        if (mysqli_query($conn, $insert_sql)) {
-            header("Location: login.php");
-            exit;
-        } else {
-            $error = "Something went wrong. Please try again.";
-        }
+    $insert_sql = "INSERT INTO users (name, email, password_hash, role, can_be_assigned) 
+                   VALUES ('$name', '$email', '$password_hash', '$role', $can_be_assigned)";
+
+    if (mysqli_query($conn, $insert_sql)) {
+
+        $new_user_id = mysqli_insert_id($conn);
+
+        $subject = "Your BugTracker verification code";
+        $body = "Hi $name,<br><br>Your verification code is: <strong>$otp_code</strong><br><br>
+                Enter this code on the verification page to activate your account.";
+
+        send_email($email, $subject, $body);
+
+        // Remember which account to verify, then send them to the OTP entry page
+        $_SESSION["pending_verify_id"] = $new_user_id;
+
+        header("Location: verifyemail.php");
+        exit;
+
+    } else {
+        $error = "Something went wrong. Please try again.";
+    }
     }
 }
 ?>
@@ -62,6 +81,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="form-group">
                 <label>Password</label>
                 <input type="password" name="password" placeholder="Create a password" required>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="can_be_assigned" value="1">
+                    I'd like to be considered for issue assignments
+                </label>
             </div>
 
             <button type="submit" class="login-btn-submit">Sign Up</button>

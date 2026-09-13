@@ -18,16 +18,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if (password_verify($password, $user["password_hash"])) {
 
-            $_SESSION["user_id"] = $user["id"];
-            $_SESSION["name"]    = $user["name"];
-            $_SESSION["role"]    = $user["role"];
-
-            if ($user["role"] == "admin") {
-                header("Location: admindashboard.php");
-                exit;
+            if ($user["status"] == "inactive") {
+                $error = "Your account has been deactivated. Please contact an Admin.";
+            } elseif ($user["email_verified"] == 0) {
+                $error = "Please verify your email before logging in. Check your inbox.";
             } else {
-                header("Location: dashboard.php");
-                exit;
+
+                $_SESSION["user_id"] = $user["id"];
+                $_SESSION["name"]    = $user["name"];
+                $_SESSION["role"]    = $user["role"];
+
+                if ($user["role"] == "admin") {
+                    header("Location: admindashboard.php");
+                    exit;
+                } else {
+                    header("Location: dashboard.php");
+                    exit;
+                }
+
             }
 
         } else {
@@ -63,16 +71,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label>Email Address</label>
                 <input type="email" name="email" placeholder="Enter your email" required>
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Enter your password" required>
-            </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Enter your password" required>
+        </div>
 
-            <div class="forgot-password">
-                <a href="#">Forgot password?</a>
-            </div>
+        <div class="forgot-password">
+            <a href="forgotpassword.php">Forgot password?</a>
+        </div>
 
-            <button type="submit" class="login-btn-submit">Login</button>
+        <button type="submit" class="login-btn-submit">Login</button>
         </form>
 
         <p class="login-footer-text">Don't have an account? <a href="register.php" class="blue-text">Sign up</a></p>

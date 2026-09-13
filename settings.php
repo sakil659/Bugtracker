@@ -100,6 +100,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["toggle_theme"])) {
     $user["theme"] = $new_theme;
 }
 
+// Handle Delete My Account
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["delete_account"])) {
+    $confirm_password = $_POST["confirm_delete_password"];
+
+    if (!password_verify($confirm_password, $user["password_hash"])) {
+        $error = "Incorrect password. Account not deleted.";
+    } else {
+
+        // Check if this user has reported any issues
+        $check_sql = "SELECT COUNT(*) as total FROM issues WHERE reporter_id = $user_id";
+        $check_result = mysqli_query($conn, $check_sql);
+        $issue_count = mysqli_fetch_assoc($check_result)["total"];
+
+        if ($issue_count > 0) {
+            $error = "You cannot delete your account while you have reported issues. Please contact an Admin.";
+        } else {
+            // Safe to delete - unassign any issues assigned to this user first
+            // Safe to delete - clean up related records first
+
+            // Unassign any issues assigned to this user
+            mysqli_query($conn, "UPDATE issues SET assignee_id = NULL WHERE assignee_id = $user_id");
+
+            // Delete this user's comments
+            mysqli_query($conn, "DELETE FROM comments WHERE user_id = $user_id");
+
+            // Delete this user's activity log entries
+            mysqli_query($conn, "DELETE FROM activity_log WHERE user_id = $user_id");
+
+            // Now safe to delete the user
+            $delete_sql = "DELETE FROM users WHERE id = $user_id";
+            mysqli_query($conn, $delete_sql);
+
+            session_destroy();
+            header("Location: login.php?deleted=1");
+            exit;
+        }
+    }
+}
+
 $css_file = ($user["theme"] == "dark") ? "dashboard-dark.css" : "dashboard.css";
 ?>
 <!DOCTYPE html>
@@ -210,7 +249,7 @@ $css_file = ($user["theme"] == "dark") ? "dashboard-dark.css" : "dashboard.css";
                     </div>
                     <div class="form-group">
                         <label>New Password</label>
-                        <input type="password" name="new_password" required>
+                        <input type="password" name="new_password" req uired>
                     </div>
                     <div class="form-group">
                         <label>Confirm New Password</label>
@@ -228,6 +267,19 @@ $css_file = ($user["theme"] == "dark") ? "dashboard-dark.css" : "dashboard.css";
                     <button type="submit" name="toggle_theme" class="btn-blue">
                         Switch to <?php echo ($user["theme"] == "dark") ? "Light" : "Dark"; ?> Mode
                     </button>
+                </form>
+            </div>
+
+            <!-- DELETE ACCOUNT -->
+            <div class="issue-detail-box">
+                <h3 class="section-heading">Delete Account</h3>
+                <p class="issue-meta">This action is permanent and cannot be undone.</p>
+                <form method="POST" action="settings.php" onsubmit="return confirm('Are you absolutely sure you want to delete your account?');" style="margin-top:10px;">
+                    <div class="form-group">
+                        <label>Enter your password to confirm</label>
+                        <input type="password" name="confirm_delete_password" required>
+                    </div>
+                    <button type="submit" name="delete_account" class="btn-blue" style="background-color: rgb(239,68,68);">Delete My Account</button>
                 </form>
             </div>
 

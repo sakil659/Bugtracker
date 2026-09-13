@@ -92,7 +92,11 @@ $issues_result = mysqli_query($conn, $issues_sql);
 
             <div class="recent-box">
                 <?php if (mysqli_num_rows($issues_result) == 0) { ?>
-                    <p class="empty-text">No issues found. <a href="createissue.php">Create one</a></p>
+                    <?php if ($role == "admin") { ?>
+                        <p class="empty-text">No issues found.</p>
+                    <?php } else { ?>
+                        <p class="empty-text">No issues found. <a href="createissue.php">Create one</a></p>
+                    <?php } ?>
                 <?php } else { ?>
                     <table class="issue-table">
                         <tr>
