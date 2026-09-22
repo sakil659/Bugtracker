@@ -163,6 +163,13 @@ $css_file = ($user["theme"] == "dark") ? "dashboard-dark.css" : "dashboard.css";
                     <a href="auditlog.php" class="sidebar-link">Activity Log</a>
                     <a href="comingsoon.php" class="sidebar-link">Projects</a>
                     <a href="settings.php" class="sidebar-link active">Settings</a>
+                <?php } elseif ($role == "developer") { ?>
+                    <a href="dashboard.php" class="sidebar-link">Dashboard</a>
+                    <a href="issue.php" class="sidebar-link">Issues</a>
+                    <a href="dashboard.php?view=assigned" class="sidebar-link">My Assigned Bugs</a>
+                    <a href="comingsoon.php" class="sidebar-link">Projects</a>
+                    <a href="auditlog.php" class="sidebar-link">Activity</a>
+                    <a href="settings.php" class="sidebar-link active">Settings</a>
                 <?php } else { ?>
                     <a href="dashboard.php" class="sidebar-link">Dashboard</a>
                     <a href="issue.php" class="sidebar-link">Issues</a>

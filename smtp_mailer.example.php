@@ -1,15 +1,14 @@
 <?php
-// smtp_mailer.php - sends email using raw sockets, no external libraries
+// smtp_mailer.example.php - copy this to smtp_mailer.php and fill in your own Gmail
+// This example file is safe to push to GitHub (no real password inside).
 
 function send_email($to_email, $subject, $body) {
 
     // ---- YOUR GMAIL SETTINGS ----
     $smtp_host = "smtp.gmail.com";
     $smtp_port = 465; // secure SSL port
-    $smtp_username = "sakilprajapati9@gmail.com";     // your Gmail address
-    $smtp_password = "slft kvnr ohwn qwsz";    // the App Password you generated
-    $smtp_username = "prajapatisakill@gmail.com";
-    $smtp_password = "ctiw qumr zzyy wusb";
+    $smtp_username = "your-gmail@gmail.com"; // your Gmail address (sender)
+    $smtp_password = "your-16-letter-app-password"; // Gmail App Password, NOT your login password
 
     // Step 1: Open a secure connection to Gmail's mail server
     $socket = fsockopen("ssl://" . $smtp_host, $smtp_port, $errno, $errstr, 15);

@@ -15,9 +15,14 @@ if ($_SESSION["role"] == "admin") {
 $user_id = $_SESSION["user_id"];
 $name = $_SESSION["name"];
 $role = $_SESSION["role"];
-$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_sql = "SELECT theme, profile_pic FROM users WHERE id = $user_id";
 $theme_result = mysqli_query($conn, $theme_sql);
-$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$theme_row = mysqli_fetch_assoc($theme_result);
+$theme = $theme_row["theme"];
+$profile_pic = "";
+if (isset($theme_row["profile_pic"])) {
+    $profile_pic = $theme_row["profile_pic"];
+}
 $css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 // Check if this is the "My Issues" filtered view
 $view = isset($_GET["view"]) ? $_GET["view"] : "all";
@@ -52,9 +57,11 @@ $low_sql = "SELECT COUNT(*) as total FROM issues WHERE (reporter_id = $user_id O
 $low_count = mysqli_fetch_assoc(mysqli_query($conn, $low_sql))["total"];
 
 // Recent issues list
-// Recent issues list - filtered if viewing "My Issues"
+// Recent issues list - filtered if viewing "My Issues" or "My Assigned Bugs"
 if ($view == "mine") {
     $issues_sql = "SELECT * FROM issues WHERE reporter_id = $user_id ORDER BY created_at DESC";
+} elseif ($view == "assigned") {
+    $issues_sql = "SELECT * FROM issues WHERE assignee_id = $user_id ORDER BY created_at DESC";
 } else {
     $issues_sql = "SELECT * FROM issues WHERE reporter_id = $user_id OR assignee_id = $user_id ORDER BY created_at DESC LIMIT 10";
 }
@@ -75,6 +82,14 @@ $issues_result = mysqli_query($conn, $issues_sql);
             <p class="sidebar-logo">🪲 Bug<span class="blue-text">Tracker</span></p>
 
             <div class="sidebar-links">
+                <?php if ($role == "developer") { ?>
+                <a href="dashboard.php" class="sidebar-link <?php echo ($view == "all") ? "active" : ""; ?>">Dashboard</a>
+                <a href="issue.php" class="sidebar-link">Issues</a>
+                <a href="dashboard.php?view=assigned" class="sidebar-link <?php echo ($view == "assigned") ? "active" : ""; ?>">My Assigned Bugs</a>
+                <a href="comingsoon.php" class="sidebar-link">Projects</a>
+                <a href="auditlog.php" class="sidebar-link">Activity</a>
+                <a href="settings.php" class="sidebar-link">Settings</a>
+                <?php } else { ?>
                 <a href="dashboard.php" class="sidebar-link <?php echo ($view == "all") ? "active" : ""; ?>">Dashboard</a>
                 <a href="issue.php" class="sidebar-link">Issues</a>
                 <a href="dashboard.php?view=mine" class="sidebar-link <?php echo ($view == "mine") ? "active" : ""; ?>">My Issues</a>
@@ -82,12 +97,17 @@ $issues_result = mysqli_query($conn, $issues_sql);
                 <a href="comingsoon.php" class="sidebar-link">Projects</a>
                 <a href="auditlog.php" class="sidebar-link">Activity</a>
                 <a href="settings.php" class="sidebar-link">Settings</a>
+                <?php } ?>
             </div>
 
             <div class="sidebar-footer">
                 <a href="logout.php" class="sidebar-link">Logout</a>
                 <div class="sidebar-user">
-                    <div class="user-avatar"><?php echo strtoupper(substr($name, 0, 1)); ?></div>
+                    <?php if ($profile_pic != "") { ?>
+                        <img src="uploads/<?php echo $profile_pic; ?>" class="user-avatar-img">
+                    <?php } else { ?>
+                        <div class="user-avatar"><?php echo strtoupper(substr($name, 0, 1)); ?></div>
+                    <?php } ?>
                     <div>
                         <p class="user-name"><?php echo $name; ?></p>
                         <p class="user-role"><?php echo ucfirst($role); ?></p>

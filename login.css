@@ -37,6 +37,22 @@ body.login-page {
   font-size: 14px;
 }
 
+.register-error {
+  color: rgb(239, 68, 68);
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.login-success {
+  color: green;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.blue-text {
+  color: rgb(46, 126, 254);
+}
+
 .form-group {
   margin-bottom: 18px;
 }

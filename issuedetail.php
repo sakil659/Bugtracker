@@ -12,9 +12,14 @@ $name = $_SESSION["name"];
 $role = $_SESSION["role"];
 $issue_id = $_GET["id"];
 
-$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_sql = "SELECT theme, profile_pic FROM users WHERE id = $user_id";
 $theme_result = mysqli_query($conn, $theme_sql);
-$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$theme_row = mysqli_fetch_assoc($theme_result);
+$theme = $theme_row["theme"];
+$profile_pic = "";
+if (isset($theme_row["profile_pic"])) {
+    $profile_pic = $theme_row["profile_pic"];
+}
 $css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 
 // Handle assignment - Admin only
@@ -60,10 +65,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["delete_issue"])) {
     header("Location: issue.php");
     exit;
 }
-// Handle status change - Admin only
+// Handle status change - Admin can change any issue,
+// Developer can only change an issue assigned to them
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["new_status"])) {
 
+    $can_change = false;
     if ($role == "admin") {
+        $can_change = true;
+    } elseif ($role == "developer") {
+        $owner_sql = "SELECT assignee_id FROM issues WHERE id = $issue_id";
+        $owner_result = mysqli_query($conn, $owner_sql);
+        $owner_row = mysqli_fetch_assoc($owner_result);
+        if ($owner_row["assignee_id"] == $user_id) {
+            $can_change = true;
+        }
+    }
+
+    if ($can_change) {
         $new_status = $_POST["new_status"];
 
         $update_sql = "UPDATE issues SET status = '$new_status' WHERE id = $issue_id";
@@ -95,7 +113,7 @@ $issue_result = mysqli_query($conn, $issue_sql);
 $issue = mysqli_fetch_assoc($issue_result);
 
 // Get all active regular users for assignment dropdown
-$users_sql = "SELECT id, name FROM users WHERE role = 'user' AND status = 'active' AND can_be_assigned = 1";
+$users_sql = "SELECT id, name FROM users WHERE role = 'developer' AND status = 'active'";
 $users_result = mysqli_query($conn, $users_sql);
 
 // Get comments for this issue
@@ -127,6 +145,13 @@ $comments_result = mysqli_query($conn, $comments_sql);
                     <a href="auditlog.php" class="sidebar-link">Activity Log</a>
                     <a href="comingsoon.php" class="sidebar-link">Projects</a>
                     <a href="settings.php" class="sidebar-link">Settings</a>
+                <?php } elseif ($role == "developer") { ?>
+                    <a href="dashboard.php" class="sidebar-link">Dashboard</a>
+                    <a href="issue.php" class="sidebar-link active">Issues</a>
+                    <a href="dashboard.php?view=assigned" class="sidebar-link">My Assigned Bugs</a>
+                    <a href="comingsoon.php" class="sidebar-link">Projects</a>
+                    <a href="auditlog.php" class="sidebar-link">Activity</a>
+                    <a href="settings.php" class="sidebar-link">Settings</a>
                 <?php } else { ?>
                     <a href="dashboard.php" class="sidebar-link">Dashboard</a>
                     <a href="issue.php" class="sidebar-link active">Issues</a>
@@ -141,7 +166,11 @@ $comments_result = mysqli_query($conn, $comments_sql);
             <div class="sidebar-footer">
                 <a href="logout.php" class="sidebar-link">Logout</a>
                 <div class="sidebar-user">
-                    <div class="user-avatar"><?php echo strtoupper(substr($name, 0, 1)); ?></div>
+                    <?php if ($profile_pic != "") { ?>
+                        <img src="uploads/<?php echo $profile_pic; ?>" class="user-avatar-img">
+                    <?php } else { ?>
+                        <div class="user-avatar"><?php echo strtoupper(substr($name, 0, 1)); ?></div>
+                    <?php } ?>
                     <div>
                         <p class="user-name"><?php echo $name; ?></p>
                         <p class="user-role"><?php echo ucfirst($role); ?></p>
@@ -190,6 +219,19 @@ $comments_result = mysqli_query($conn, $comments_sql);
                     <form method="POST" action="issuedetail.php?id=<?php echo $issue_id; ?>" onsubmit="return confirm('Are you sure you want to delete this issue?');" style="margin-top:15px;">
                         <button type="submit" name="delete_issue" class="btn-blue" style="background-color: rgb(239,68,68);">Delete Issue</button>
                     </form>
+                <?php } elseif ($role == "developer" && $issue["assignee_id"] == $user_id) { ?>
+                    <form method="POST" action="issuedetail.php?id=<?php echo $issue_id; ?>" class="status-form">
+                        <label>Change Status</label>
+                        <select name="new_status">
+                            <option value="Open" <?php if ($issue["status"] == "Open") echo "selected"; ?>>Open</option>
+                            <option value="In Progress" <?php if ($issue["status"] == "In Progress") echo "selected"; ?>>In Progress</option>
+                            <option value="Resolved" <?php if ($issue["status"] == "Resolved") echo "selected"; ?>>Resolved</option>
+                            <option value="Closed" <?php if ($issue["status"] == "Closed") echo "selected"; ?>>Closed</option>
+                        </select>
+                        <button type="submit" class="btn-blue">Update Status</button>
+                    </form>
+                <?php } elseif ($role == "developer") { ?>
+                    <p class="empty-text" style="text-align:left;">This issue is not assigned to you.</p>
                 <?php } else { ?>
                     <p class="empty-text" style="text-align:left;">Only an Admin can change the status of this issue.</p>
                 <?php } ?>

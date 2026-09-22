@@ -10,9 +10,14 @@ $name = $_SESSION["name"];
 $role = $_SESSION["role"];
 $user_id = $_SESSION["user_id"];
 
-$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_sql = "SELECT theme, profile_pic FROM users WHERE id = $user_id";
 $theme_result = mysqli_query($conn, $theme_sql);
-$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$theme_row = mysqli_fetch_assoc($theme_result);
+$theme = $theme_row["theme"];
+$profile_pic = "";
+if (isset($theme_row["profile_pic"])) {
+    $profile_pic = $theme_row["profile_pic"];
+}
 $css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 ?>
 <!DOCTYPE html>
@@ -35,6 +40,13 @@ $css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
         <a href="auditlog.php" class="sidebar-link">Activity Log</a>
         <a href="comingsoon.php" class="sidebar-link active">Projects</a>
         <a href="settings.php" class="sidebar-link">Settings</a>
+    <?php } elseif ($role == "developer") { ?>
+        <a href="dashboard.php" class="sidebar-link">Dashboard</a>
+        <a href="issue.php" class="sidebar-link">Issues</a>
+        <a href="dashboard.php?view=assigned" class="sidebar-link">My Assigned Bugs</a>
+        <a href="comingsoon.php" class="sidebar-link active">Projects</a>
+        <a href="auditlog.php" class="sidebar-link">Activity</a>
+        <a href="settings.php" class="sidebar-link">Settings</a>
     <?php } else { ?>
         <a href="dashboard.php" class="sidebar-link">Dashboard</a>
         <a href="issue.php" class="sidebar-link">Issues</a>
@@ -49,7 +61,11 @@ $css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
             <div class="sidebar-footer">
                 <a href="logout.php" class="sidebar-link">Logout</a>
                 <div class="sidebar-user">
-                    <div class="user-avatar"><?php echo strtoupper(substr($name, 0, 1)); ?></div>
+                    <?php if ($profile_pic != "") { ?>
+                        <img src="uploads/<?php echo $profile_pic; ?>" class="user-avatar-img">
+                    <?php } else { ?>
+                        <div class="user-avatar"><?php echo strtoupper(substr($name, 0, 1)); ?></div>
+                    <?php } ?>
                     <div>
                         <p class="user-name"><?php echo $name; ?></p>
                         <p class="user-role"><?php echo ucfirst($role); ?></p>

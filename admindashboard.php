@@ -17,9 +17,14 @@ $user_id = $_SESSION["user_id"];
 $name = $_SESSION["name"];
 $role = $_SESSION["role"];
 
-$theme_sql = "SELECT theme FROM users WHERE id = $user_id";
+$theme_sql = "SELECT theme, profile_pic FROM users WHERE id = $user_id";
 $theme_result = mysqli_query($conn, $theme_sql);
-$theme = mysqli_fetch_assoc($theme_result)["theme"];
+$theme_row = mysqli_fetch_assoc($theme_result);
+$theme = $theme_row["theme"];
+$profile_pic = "";
+if (isset($theme_row["profile_pic"])) {
+    $profile_pic = $theme_row["profile_pic"];
+}
 $css_file = ($theme == "dark") ? "dashboard-dark.css" : "dashboard.css";
 
 // Global stats - across ALL issues, not just one user's
@@ -68,7 +73,11 @@ $issues_result = mysqli_query($conn, $issues_sql);
             <div class="sidebar-footer">
                 <a href="logout.php" class="sidebar-link">Logout</a>
                 <div class="sidebar-user">
-                    <div class="user-avatar"><?php echo strtoupper(substr($name, 0, 1)); ?></div>
+                    <?php if ($profile_pic != "") { ?>
+                        <img src="uploads/<?php echo $profile_pic; ?>" class="user-avatar-img">
+                    <?php } else { ?>
+                        <div class="user-avatar"><?php echo strtoupper(substr($name, 0, 1)); ?></div>
+                    <?php } ?>
                     <div>
                         <p class="user-name"><?php echo $name; ?></p>
                         <p class="user-role"><?php echo ucfirst($role); ?></p>
