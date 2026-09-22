@@ -8,6 +8,8 @@ function send_email($to_email, $subject, $body) {
     $smtp_port = 465; // secure SSL port
     $smtp_username = "sakilprajapati9@gmail.com";     // your Gmail address
     $smtp_password = "slft kvnr ohwn qwsz";    // the App Password you generated
+    $smtp_username = "prajapatisakill@gmail.com";
+    $smtp_password = "ctiw qumr zzyy wusb";
 
     // Step 1: Open a secure connection to Gmail's mail server
     $socket = fsockopen("ssl://" . $smtp_host, $smtp_port, $errno, $errstr, 15);

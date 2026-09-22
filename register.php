@@ -10,43 +10,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST["name"];
     $email = $_POST["email"];
     $password = $_POST["password"];
-    $role = "user";
-    $can_be_assigned = isset($_POST["can_be_assigned"]) ? 1 : 0;
+    $wants_developer = isset($_POST["wants_developer"]) ? 1 : 0;
+    $role = ($wants_developer == 1) ? "developer" : "user";
 
     $check_sql = "SELECT * FROM users WHERE email = '$email'";
     $check_result = mysqli_query($conn, $check_sql);
 
     if (mysqli_num_rows($check_result) > 0) {
-        $error = "An account with this email already exists.";
+
+        $existing_user = mysqli_fetch_assoc($check_result);
+
+        if ($existing_user["email_verified"] == 0) {
+            $new_otp = rand(100000, 999999);
+            mysqli_query($conn, "UPDATE users SET verify_token = '$new_otp' WHERE id = " . $existing_user["id"]);
+
+            $subject = "Your BugTracker verification code";
+            $body = "Hi " . $existing_user["name"] . ",<br><br>Your new verification code is: <strong>$new_otp</strong>";
+            send_email($email, $subject, $body);
+
+            $_SESSION["pending_verify_id"] = $existing_user["id"];
+            header("Location: verifyemail.php");
+            exit;
+
+        } else {
+            $error = "An account with this email already exists.";
+        }
+
     } else {
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-        // Generate a random, unique verification token
-    // Generate a random 6-digit OTP code
-    $otp_code = rand(100000, 999999);
+        $otp_code = rand(100000, 999999);
 
-    $insert_sql = "INSERT INTO users (name, email, password_hash, role, can_be_assigned) 
-                   VALUES ('$name', '$email', '$password_hash', '$role', $can_be_assigned)";
+        $insert_sql = "INSERT INTO users (name, email, password_hash, role, wants_developer, verify_token, email_verified) 
+                       VALUES ('$name', '$email', '$password_hash', '$role', $wants_developer, '$otp_code', 0)";
 
-    if (mysqli_query($conn, $insert_sql)) {
+        if (mysqli_query($conn, $insert_sql)) {
 
-        $new_user_id = mysqli_insert_id($conn);
+            $new_user_id = mysqli_insert_id($conn);
 
-        $subject = "Your BugTracker verification code";
-        $body = "Hi $name,<br><br>Your verification code is: <strong>$otp_code</strong><br><br>
-                Enter this code on the verification page to activate your account.";
+            $subject = "Your BugTracker verification code";
+            $body = "Hi $name,<br><br>Your verification code is: <strong>$otp_code</strong><br><br>
+                    Enter this code on the verification page to activate your account.";
 
-        send_email($email, $subject, $body);
+            send_email($email, $subject, $body);
 
-        // Remember which account to verify, then send them to the OTP entry page
-        $_SESSION["pending_verify_id"] = $new_user_id;
+            $_SESSION["pending_verify_id"] = $new_user_id;
 
-        header("Location: verifyemail.php");
-        exit;
+            header("Location: verifyemail.php");
+            exit;
 
-    } else {
-        $error = "Something went wrong. Please try again.";
-    }
+        } else {
+            $error = "Something went wrong. Please try again.";
+        }
     }
 }
 ?>
@@ -85,8 +100,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <div class="form-group">
                 <label>
-                    <input type="checkbox" name="can_be_assigned" value="1">
-                    I'd like to be considered for issue assignments
+                    <input type="checkbox" name="wants_developer" value="1">
+                    I would like to be a Developer (fix bugs)
                 </label>
             </div>
 

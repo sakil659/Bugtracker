@@ -112,6 +112,7 @@ $users_result = mysqli_query($conn, $users_sql);
                                 <input type="hidden" name="user_id" value="<?php echo $user["id"]; ?>">
                                 <select name="new_role">
                                     <option value="user" <?php if ($user["role"] == "user") echo "selected"; ?>>User</option>
+                                    <option value="developer" <?php if ($user["role"] == "developer") echo "selected"; ?>>Developer</option>
                                     <option value="admin" <?php if ($user["role"] == "admin") echo "selected"; ?>>Admin</option>
                                 </select>
                                 <button type="submit" name="change_role" class="btn-blue">Save</button>
